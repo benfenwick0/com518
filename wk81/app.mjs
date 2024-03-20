@@ -96,12 +96,16 @@ app.get('/artist/:artist/title/:title', (req, res) => {
 // Buy a song with a given ID
 app.post('/song/:id/buy', (req, res) => {
     try {
+        if(!req.session || !req.session.username){
+            res.status(401).json({error: "Unauthorized: No user logged in"});
+        } else{
         const stmt = db.prepare('UPDATE wadsongs SET quantity=quantity-1 WHERE id=?');
         const info = stmt.run(req.params.id);
         if(info.changes == 1) {
             res.json({success: 1});
         } else {
             res.status(404).json({error: "No song with that ID"});
+        }
         }
     } catch(error) {
         res.status(500).json({error: error});

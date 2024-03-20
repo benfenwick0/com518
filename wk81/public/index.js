@@ -6,6 +6,8 @@
  * However this code, or code derived from it, MUST NOT be used in the assignment.
  */
 
+
+
 // Handle button clicks on the search button
 document.getElementById("ht_search").addEventListener("click", e=> {
 
@@ -59,7 +61,9 @@ async function ajaxSearch(artist) {
 					alert("Successfully bought");
 				} else if (response.status == 404) {
 					alert("No song with ID");
-				} else {
+				} else if (response.status == 401) {
+                    alert("User not logged in");
+                } else {
 					alert(`Unknown error: code ${response.status}`);
 				}
 			} 
@@ -109,4 +113,55 @@ document.getElementById("ht_add").addEventListener("click", async() => {
     } catch(e) {
         alert(`Error: ${e}`);
     }
+});
+
+document.getElementById("loginButton").addEventListener("click", async ()=>{
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try{
+        const response = await fetch('/login',{
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username, password})
+        });
+
+        if (response.status ==200){
+            const user = await response.json();
+            document.getElementById("loggedInMessageFillerText").innerHTML = `Logged in as ${user.username}`;
+            document.getElementById("loggedInMessage").style.display = 'block';
+            document.getElementById("login_form").style.display = 'none';
+            document.getElementById("buttonlogout").style.display = 'block';
+        }
+        else{
+            alert('Login failed. Please enter credentials again.')
+        }
+    }catch(error){
+        alert(`Error: ${e}`);
+    }
+
+});
+
+document.getElementById("logoutButton").addEventListener("click", async ()=>{
+    try{
+        const response = await fetch('/logout',{
+            method: 'POST',
+        });
+
+        if (response.status ==200){
+            alert('Logged out successfully');
+            document.getElementById("buttonlogout").style.display = 'none';
+            document.getElementById("login_form").style.display = 'block';
+            document.getElementById("loggedInMessageFillerText").innerHTML = "";
+
+        }
+        else{
+            alert('Login failed. Please enter credentials again.')
+        }
+    }catch(error){
+        alert(`Error: ${e}`);
+    }
+
 });
