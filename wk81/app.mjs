@@ -111,12 +111,16 @@ app.post('/song/:id/buy', (req, res) => {
 // Delete a song with a given ID
 app.delete('/song/:id', (req, res) => {
     try {
+        if(!req.session || !req.session.username){
+            res.status(401).json({error: "Unauthorized: No user logged in"});
+        } else{
         const stmt = db.prepare('DELETE FROM wadsongs WHERE id=?');
         const info = stmt.run(req.params.id);
         if(info.changes == 1) {
             res.json({success: 1});
         } else {
             res.status(404).json({error: "No song with that ID"});
+        }
         }
     } catch(error) {
         res.status(500).json({error: error});
@@ -145,7 +149,6 @@ app.use((req,res,next)=>{
 	next();
 });
 
-
 //Login POST 
 app.post('/login', (req,res)=>{
 	
@@ -164,7 +167,6 @@ app.post('/login', (req,res)=>{
 	}
 	
 });
-
 
 //Login GET
 app.get('/login', (req,res)=>{
