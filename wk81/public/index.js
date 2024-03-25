@@ -35,8 +35,8 @@ async function ajaxSearch(artist) {
 		let paragraph = document.createElement('p');
 		//Set the innerHTML of the paragraph to the song details
 		//paragraph.innerHTML = `${song.title} by ${song.artist}, year ${song.year}<br />`;
-			
-			
+				
+
 		const textNode = document.createTextNode(`${song.title} by ${song.artist}, year ${song.year}`);
 		
 		
@@ -115,6 +115,33 @@ document.getElementById("ht_add").addEventListener("click", async() => {
     }
 });
 
+
+
+const loginStatus = async()=>{
+    try{
+        const response = await fetch('/login');
+        const data = await response.json();
+
+        if (data.username == null){//logged in user
+            document.getElementById("buttonlogout").style.display = 'none';
+            document.getElementById("login_form").style.display = 'block';
+            document.getElementById("loggedInMessageFillerText").innerHTML = "";
+        }
+        else{
+            document.getElementById("loggedInMessageFillerText").innerHTML = `Logged in as ${data.username}`;
+            document.getElementById("loggedInMessage").style.display = 'block';
+            document.getElementById("login_form").style.display = 'none';
+            document.getElementById("buttonlogout").style.display = 'block';
+        }
+    } catch (e){
+        alert(`Error: ${e}`);
+    }
+}
+
+
+loginStatus();
+
+
 document.getElementById("loginButton").addEventListener("click", async ()=>{
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -165,3 +192,4 @@ document.getElementById("logoutButton").addEventListener("click", async ()=>{
     }
 
 });
+
