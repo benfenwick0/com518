@@ -119,19 +119,21 @@ document.getElementById("ht_add").addEventListener("click", async() => {
 
 const loginStatus = async()=>{
     try{
-        const response = await fetch('/login');
+        const response = await fetch('/users/login');
         const data = await response.json();
 
-        if (data.username == null){//logged in user
+        if (data.username == null){//not logged in
             document.getElementById("buttonlogout").style.display = 'none';
             document.getElementById("login_form").style.display = 'block';
             document.getElementById("loggedInMessageFillerText").innerHTML = "";
+            document.getElementById("searchForm").style.display = 'none';
         }
-        else{
+        else{//logged in user
             document.getElementById("loggedInMessageFillerText").innerHTML = `Logged in as ${data.username}`;
             document.getElementById("loggedInMessage").style.display = 'block';
             document.getElementById("login_form").style.display = 'none';
             document.getElementById("buttonlogout").style.display = 'block';
+            document.getElementById("searchForm").style.display = 'block';
         }
     } catch (e){
         alert(`Error: ${e}`);
@@ -147,7 +149,7 @@ document.getElementById("loginButton").addEventListener("click", async ()=>{
     const password = document.getElementById('password').value;
 
     try{
-        const response = await fetch('/login',{
+        const response = await fetch('/users/login',{
             method: 'POST',
             headers:{
                 'Content-Type': 'application/json'
@@ -161,6 +163,8 @@ document.getElementById("loginButton").addEventListener("click", async ()=>{
             document.getElementById("loggedInMessage").style.display = 'block';
             document.getElementById("login_form").style.display = 'none';
             document.getElementById("buttonlogout").style.display = 'block';
+            document.getElementById("searchForm").style.display = 'block';
+            alert('Logged in successfully')
         }
         else{
             alert('Login failed. Please enter credentials again.')
@@ -173,7 +177,7 @@ document.getElementById("loginButton").addEventListener("click", async ()=>{
 
 document.getElementById("logoutButton").addEventListener("click", async ()=>{
     try{
-        const response = await fetch('/logout',{
+        const response = await fetch('/users/logout',{
             method: 'POST',
         });
 
@@ -182,6 +186,7 @@ document.getElementById("logoutButton").addEventListener("click", async ()=>{
             document.getElementById("buttonlogout").style.display = 'none';
             document.getElementById("login_form").style.display = 'block';
             document.getElementById("loggedInMessageFillerText").innerHTML = "";
+            document.getElementById("searchForm").style.display = 'none';
 
         }
         else{

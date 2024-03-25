@@ -10,9 +10,11 @@
 
 // Import dependencies
 import express from 'express';
-import Database from 'better-sqlite3';
 import expressSession from 'express-session';
 import betterSqlite3Session from 'express-session-better-sqlite3';
+import usersRouter from './routes/users.mjs';
+import db from './routes/db.mjs';
+import userCheck from './middleware/userCheck.mjs';
 
 // Create our Express server.
 const app = express();
@@ -24,7 +26,6 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Load the database. You may need to change the path.
-const db = new Database("wadsongs.db");
 const SqliteStore = betterSqlite3Session(expressSession, db);
 
 app.use(expressSession({
@@ -58,6 +59,13 @@ app.use(expressSession({
         httpOnly: false // allow client-side code to access the cookie, otherwise it's kept to the HTTP messages
     }
 }));
+
+
+app.use('/users', usersRouter);
+
+app.use(userCheck);
+
+
 
 
 // Search by artist
@@ -96,16 +104,12 @@ app.get('/artist/:artist/title/:title', (req, res) => {
 // Buy a song with a given ID
 app.post('/song/:id/buy', (req, res) => {
     try {
-        if(!req.session || !req.session.username){
-            res.status(401).json({error: "Unauthorized: No user logged in"});
-        } else{
         const stmt = db.prepare('UPDATE wadsongs SET quantity=quantity-1 WHERE id=?');
         const info = stmt.run(req.params.id);
         if(info.changes == 1) {
             res.json({success: 1});
         } else {
             res.status(404).json({error: "No song with that ID"});
-        }
         }
     } catch(error) {
         res.status(500).json({error: error});
@@ -115,16 +119,13 @@ app.post('/song/:id/buy', (req, res) => {
 // Delete a song with a given ID
 app.delete('/song/:id', (req, res) => {
     try {
-        if(!req.session || !req.session.username){
-            res.status(401).json({error: "Unauthorized: No user logged in"});
-        } else{
+
         const stmt = db.prepare('DELETE FROM wadsongs WHERE id=?');
         const info = stmt.run(req.params.id);
         if(info.changes == 1) {
             res.json({success: 1});
         } else {
             res.status(404).json({error: "No song with that ID"});
-        }
         }
     } catch(error) {
         res.status(500).json({error: error});
@@ -134,14 +135,12 @@ app.delete('/song/:id', (req, res) => {
 // Add a song
 app.post('/song/create', (req, res) => {
     try {
-        if(req.body.title == "" || req.body.artist == "" || req.body.year == "" || req.body.price == "" || req.body.quantity == "") {
-            res.status(400).json({error: "Blank fields"});
-        } else {
+
             const stmt = db.prepare('INSERT INTO wadsongs(title,artist,year,downloads,price,quantity) VALUES(?,?,?,0,?,?)');
             const info = stmt.run(req.body.title, req.body.artist, req.body.year, req.body.price, req.body.quantity);
             res.json({id: info.lastInsertRowid});
         }
-    } catch(error) {
+     catch(error) {
         res.status(500).json({error: error});
     }
 });
@@ -153,34 +152,5 @@ app.use((req,res,next)=>{
 	next();
 });
 
-//Login POST 
-app.post('/login', (req,res)=>{
-	
-	const stmt = db.prepare('SELECT * FROM ht_users WHERE username=? and password=?')
-	const results = stmt.all(req.body.username, req.body.password);
-	
-	if(results.length == 1){
-		req.session.username = results[0].username;
-		res.json({"username": req.body.username});
-	//if(req.body.username == 'SimonSmith' && req.body.password == 'secret'){
-	//	req.session.username = req.body.username;
-	//	res.json({success: 1)};
-	//}
-	} else{
-		res.status(401).json({error: "Incorrect login!"});
-	}
-	
-});
-
-//Login GET
-app.get('/login', (req,res)=>{
-	res.json({username: req.session.username || null});
-});
-
-//Logout POST route
-app.post('/logout', (req,res)=>{
-	req.session = null;
-	res.json({'success': 1});
-});
 
 app.listen(3000);
